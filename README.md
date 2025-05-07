@@ -18,8 +18,35 @@ Ce projet de **Computer Vision** utilise **YOLOv8** (You Only Look Once, version
 - Entraîner (ou affiner) un modèle YOLOv8 sur un dataset personnalisé.
 - Effectuer la détection en temps réel ou sur vidéos enregistrées.
 
-## Screenshots
+## 📷 Screenshots
 ![Mario saut](resultat_detection.jpg)
+
+## 🗂️ Structure des données d'entraînement
+Le dataset est organisé selon le format attendu par YOLOv8 et peut être crée par Label-Studio  :
+<pre lang="markdown">
+data/
+├── images/
+│   ├── train/
+│   │   ├── mario1.jpg
+│   │   └── ...
+│   └── val/
+│       ├── mario_val1.jpg
+│       └── ...
+├── labels/
+│   ├── train/
+│   │   ├── mario1.txt
+│   │   └── ...
+│   └── val/
+│       ├── mario_val1.txt
+│       └── ...
+├── dataset.yaml
+└── labels.txt
+
+</pre>
+ A vous de creer votre propre dataset si besoin
+<hr>
+
+#### Le model pré original se trouve dans le dossier runs sous l'extension .pt (best ou last)
 
 
 
