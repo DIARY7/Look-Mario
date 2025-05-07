@@ -128,9 +128,9 @@ ENV/
 env.bak/
 venv.bak/
 data.zip
-runs/
 data/
 test/
+runs/
 
 # Spyder project settings
 .spyderproject

@@ -46,7 +46,7 @@ data/
  A vous de creer votre propre dataset si besoin
 <hr>
 
-#### Le model pré original se trouve dans le dossier runs sous l'extension .pt (best ou last)
+#### Le model pré original se trouve dans le dossier model sous l'extension .pt (best ou last)
 
 
 
