@@ -130,6 +130,7 @@ venv.bak/
 data.zip/
 data/
 test/
+runs/
 
 # Spyder project settings
 .spyderproject
