@@ -55,7 +55,6 @@ def main():
     game_monitor = get_game_window(game_title)
 
     # Boucle principale pour la détection en temps réel
-    overlay = None  # Initialisation de la fenêtre d'overlay
 
     print("Détection en cours. Appuyez sur 'q' pour quitter.")
 
@@ -66,15 +65,6 @@ def main():
             # Capturer l'écran du jeu
             game_screen = capture_game_screen(game_monitor)
             height, width = game_screen.shape[:2]
-
-            if overlay is None:
-                # Créer la fenêtre d'overlay avec la taille appropriée
-                overlay = np.zeros((height, width, 3), dtype=np.uint8)
-                cv2.namedWindow('Overlay Détections', cv2.WINDOW_NORMAL)
-                cv2.setWindowProperty('Overlay Détections', cv2.WND_PROP_TOPMOST, 1)  # Toujours au premier plan
-
-            # Faire une copie pour dessiner les détections
-            overlay.fill(0)  # Effacer l'overlay précédent
 
             # Exécuter la détection avec YOLO
             results = model(game_screen)
@@ -90,24 +80,21 @@ def main():
                     nom_classe = model.names[classe]
                     confiance = float(box.conf[0])
 
-                    # Ne dessiner que si la confiance est suffisante
-                    if confiance > 0.5:  # Seuil de confiance ajustable
+                    if confiance > 0.5:
                         color = colors[classe]
 
-                        # Dessiner sur l'overlay au lieu de l'image originale
-                        cv2.rectangle(overlay, (x1, y1), (x2, y2), color, 2)
+                        cv2.rectangle(game_screen, (x1, y1), (x2, y2), color, 2)
 
-                        # Ajouter le texte
                         text = f"{nom_classe} {confiance:.2f}"
                         text_size = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 2)[0]
 
-                        cv2.rectangle(overlay, (x1, y1 - text_size[1] - 10),
+                        cv2.rectangle(game_screen, (x1, y1 - text_size[1] - 10),
                                       (x1 + text_size[0], y1), color, -1)
-                        cv2.putText(overlay, text, (x1, y1 - 5),
+                        cv2.putText(game_screen, text, (x1, y1 - 5),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 
             # Afficher l'overlay
-            cv2.imshow('Overlay Détections', overlay)
+            cv2.imshow('Détection sur jeu', game_screen)
 
             # Calculer le temps d'attente pour maintenir le FPS cible
             elapsed_time = time.time() - start_time
