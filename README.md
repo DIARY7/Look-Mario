@@ -6,10 +6,10 @@ Ce projet de **Computer Vision** utilise **YOLOv8** (You Only Look Once, version
 
 ## 🧠 Technologies utilisées
 
-- 🐍 **Python 3.8+**
+- 🐍 **Python 3.0+**
 - 🔍 **YOLOv8** (via [Ultralytics](https://github.com/ultralytics/ultralytics))
 - 📦 **OpenCV**
-- 🧰 **NumPy**
+- 🧰 **Label Studio**
 - 🎞️ **Jupyter notebook** 
 
 ## 🎯 Objectifs
