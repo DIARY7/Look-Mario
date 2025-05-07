@@ -19,7 +19,10 @@ class OverlayWindow(QMainWindow):
         self.game_title = game_title
         self.monitor = self.get_game_window()
         self.boxes = []
-
+        self.colors = [
+            QColor(255, 165, 0, 180),  # Orange vif (RGBA)
+            QColor(255, 0, 0, 180)  # Rouge vif (RGBA)
+        ]
         self.init_ui()
 
         self.timer = QTimer()
@@ -46,7 +49,6 @@ class OverlayWindow(QMainWindow):
     def get_game_window(self):
         try:
             window = gw.getWindowsWithTitle(self.game_title)[0]
-            # window.activate()
             return {
                 'top': window.top,
                 'left': window.left,
@@ -77,19 +79,22 @@ class OverlayWindow(QMainWindow):
                 if conf > 0.5:
                     self.boxes.append({
                         'rect': (x1, y1, x2, y2),
-                        'label': f"{self.model.names[cls]} {conf:.2f}"
+                        'label': f"{self.model.names[cls]} {conf:.2f}",
+                        'classe':cls
                     })
 
         self.repaint()
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        pen = QPen(QColor(0, 255, 0, 180), 2)
-        painter.setPen(pen)
-        painter.setFont(QFont('Arial', 10))
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setFont(QFont('Arial', 15))
 
         for box in self.boxes:
             x1, y1, x2, y2 = box['rect']
+            pen = QPen(self.colors[box['classe']], 3)
+            painter.setPen(pen)
+
             painter.drawRect(x1, y1, x2 - x1, y2 - y1)
             painter.drawText(x1 + 5, y1 - 5, box['label'])
 
