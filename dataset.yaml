@@ -1,0 +1,6 @@
+path: D:\Etudes\S6\perso\yolo\capture-gameplay\look_mario\look_mario
+train: data/images/train
+val: data/images/val
+names:
+  0: Mario
+  1: Photo_Mario
