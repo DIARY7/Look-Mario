@@ -20,8 +20,8 @@ class OverlayWindow(QMainWindow):
         self.monitor = self.get_game_window()
         self.boxes = []
         self.colors = [
-            QColor(255, 165, 0, 180),  # Orange vif (RGBA)
-            QColor(255, 0, 0, 180)  # Rouge vif (RGBA)
+            QColor(255, 165, 12, 180),
+            QColor(0, 255, 0, 180)  
         ]
         self.init_ui()
 
