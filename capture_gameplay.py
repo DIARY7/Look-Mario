@@ -12,7 +12,7 @@ from PyQt5.QtCore import Qt, QTimer
 
 
 class OverlayWindow(QMainWindow):
-    def __init__(self, model, game_title, fps=30):
+    def __init__(self, model, game_title, fps=40):
         super().__init__()
         self.model = model
         self.fps = fps
@@ -21,7 +21,7 @@ class OverlayWindow(QMainWindow):
         self.boxes = []
         self.colors = [
             QColor(255, 165, 12, 180),
-            QColor(0, 255, 0, 180)  
+            QColor(0, 255, 0, 180)
         ]
         self.init_ui()
 
