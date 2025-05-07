@@ -18,6 +18,8 @@ Ce projet de **Computer Vision** utilise **YOLOv8** (You Only Look Once, version
 - Entraîner (ou affiner) un modèle YOLOv8 sur un dataset personnalisé.
 - Effectuer la détection en temps réel ou sur vidéos enregistrées.
 
+## Screenshots
+![Mario saut](resultat_detection.jpg)
 
 
 
