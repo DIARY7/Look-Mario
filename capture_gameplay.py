@@ -1,120 +1,105 @@
-from ultralytics import YOLO
-import cv2
-import numpy as np
+import sys
 import time
+import numpy as np
+import cv2
 import mss
-import pygetwindow as gw  # Pour obtenir les fenêtres actives
+from ultralytics import YOLO
+import pygetwindow as gw
+
+from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtGui import QPainter, QColor, QPen, QFont
+from PyQt5.QtCore import Qt, QTimer
 
 
-def capture_game_screen(monitor=None):
-    """Capture l'écran de jeu ou une fenêtre spécifique"""
-    with mss.mss() as sct:
-        if monitor is None:
-            # Capture l'écran entier par défaut
-            monitor = sct.monitors[1]  # Le moniteur principal
+class OverlayWindow(QMainWindow):
+    def __init__(self, model, game_title, fps=30):
+        super().__init__()
+        self.model = model
+        self.fps = fps
+        self.game_title = game_title
+        self.monitor = self.get_game_window()
+        self.boxes = []
 
-        screenshot = sct.grab(monitor)
-        # Convertir en format numpy pour OpenCV
-        img = np.array(screenshot)
-        # Convertir de BGRA à BGR (supprimer le canal alpha)
-        return cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
+        self.init_ui()
 
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_frame)
+        self.timer.start(1000 // fps)
 
-def get_game_window(game_title):
-    """Obtient les dimensions d'une fenêtre de jeu spécifique"""
-    try:
-        window = gw.getWindowsWithTitle(game_title)[0]
-        window.activate()  # Mettre la fenêtre au premier plan
+    def init_ui(self):
+        self.setWindowFlags(
+            Qt.FramelessWindowHint |
+            Qt.WindowStaysOnTopHint |
+            Qt.X11BypassWindowManagerHint |
+            Qt.Tool
+        )
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setAttribute(Qt.WA_TransparentForMouseEvents)
 
-        # Obtenir les coordonnées de la fenêtre
-        left, top = window.left, window.top
-        width, height = window.width, window.height
+        if self.monitor:
+            self.setGeometry(
+                self.monitor['left'], self.monitor['top'],
+                self.monitor['width'], self.monitor['height']
+            )
+        self.show()
 
-        # Créer le moniteur pour mss
-        monitor = {"top": top, "left": left, "width": width, "height": height}
-        return monitor
-    except IndexError:
-        print(f"Fenêtre de jeu '{game_title}' non trouvée. Utilisation de l'écran complet.")
-        return None
+    def get_game_window(self):
+        try:
+            window = gw.getWindowsWithTitle(self.game_title)[0]
+            # window.activate()
+            return {
+                'top': window.top,
+                'left': window.left,
+                'width': window.width,
+                'height': window.height
+            }
+        except IndexError:
+            print(f"Fenêtre '{self.game_title}' non trouvée.")
+            return None
 
+    def update_frame(self):
+        if not self.monitor:
+            return
 
-def main():
-    # Charger le modèle YOLO entraîné
-    model = YOLO('runs/detect/train/weights/best.pt')
+        with mss.mss() as sct:
+            img = np.array(sct.grab(self.monitor))
+            frame = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
 
-    # Paramètres
-    game_title = "yuzu 1734 | Super Smash Bros. Ultimate(64-bit) | 13.0.2 |  NVIDIA"  # Remplacez par le nom exact de la fenêtre de votre jeu
-    fps_target = 30  # Fréquence cible des détections
+        results = self.model(frame)
+        self.boxes = []
 
-    # Générer des couleurs pour chaque classe
-    nb_classes = len(model.names)
-    np.random.seed(42)
-    colors = np.random.randint(0, 255, size=(nb_classes, 3), dtype=np.uint8).tolist()
+        for r in results:
+            for box in r.boxes:
+                x1, y1, x2, y2 = map(int, box.xyxy[0])
+                cls = int(box.cls[0])
+                conf = float(box.conf[0])
 
-    # Obtenir la fenêtre du jeu
-    game_monitor = get_game_window(game_title)
+                if conf > 0.5:
+                    self.boxes.append({
+                        'rect': (x1, y1, x2, y2),
+                        'label': f"{self.model.names[cls]} {conf:.2f}"
+                    })
 
-    # Boucle principale pour la détection en temps réel
+        self.repaint()
 
-    print("Détection en cours. Appuyez sur 'q' pour quitter.")
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        pen = QPen(QColor(0, 255, 0, 180), 2)
+        painter.setPen(pen)
+        painter.setFont(QFont('Arial', 10))
 
-    try:
-        while True:
-            start_time = time.time()
-
-            # Capturer l'écran du jeu
-            game_screen = capture_game_screen(game_monitor)
-            height, width = game_screen.shape[:2]
-
-            # Exécuter la détection avec YOLO
-            results = model(game_screen)
-
-            # Traiter les résultats et dessiner les boîtes
-            for r in results:
-                boxes = r.boxes
-                for box in boxes:
-                    x1, y1, x2, y2 = box.xyxy[0]
-                    x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
-
-                    classe = int(box.cls[0])
-                    nom_classe = model.names[classe]
-                    confiance = float(box.conf[0])
-
-                    if confiance > 0.5:
-                        color = colors[classe]
-
-                        cv2.rectangle(game_screen, (x1, y1), (x2, y2), color, 2)
-
-                        text = f"{nom_classe} {confiance:.2f}"
-                        text_size = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 2)[0]
-
-                        cv2.rectangle(game_screen, (x1, y1 - text_size[1] - 10),
-                                      (x1 + text_size[0], y1), color, -1)
-                        cv2.putText(game_screen, text, (x1, y1 - 5),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-
-            # Afficher l'overlay
-            cv2.imshow('Détection sur jeu', game_screen)
-
-            # Calculer le temps d'attente pour maintenir le FPS cible
-            elapsed_time = time.time() - start_time
-            wait_time = max(1, int((1.0 / fps_target - elapsed_time) * 1000))
-
-            # Vérifier si l'utilisateur veut quitter
-            if cv2.waitKey(wait_time) & 0xFF == ord('q'):
-                break
-
-            # Afficher le FPS actuel
-            fps = 1.0 / (time.time() - start_time)
-            print(f"FPS: {fps:.2f}", end="\r")
-
-    except KeyboardInterrupt:
-        print("\nDétection interrompue par l'utilisateur")
-
-    finally:
-        cv2.destroyAllWindows()
-        print("Programme terminé")
+        for box in self.boxes:
+            x1, y1, x2, y2 = box['rect']
+            painter.drawRect(x1, y1, x2 - x1, y2 - y1)
+            painter.drawText(x1 + 5, y1 - 5, box['label'])
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    game_title = "yuzu 1734 | Super Smash Bros. Ultimate (64-bit) | 13.0.2 | NVIDIA"
+    model_path = "runs/detect/train/weights/best.pt"
+
+    model = YOLO(model_path)
+
+    app = QApplication(sys.argv)
+    overlay = OverlayWindow(model, game_title)
+    sys.exit(app.exec_())
