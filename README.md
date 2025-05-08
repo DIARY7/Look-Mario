@@ -19,7 +19,7 @@ Ce projet de **Computer Vision** utilise **YOLOv8** (You Only Look Once, version
 - Effectuer la détection en temps réel ou sur vidéos enregistrées.
 
 ## 📷 Screenshots
-![Mario saut](resultat_detection.jpg)
+![Mario saut](img/resultat_detection.jpg)
 
 ## 🗂️ Structure des données d'entraînement
 Le dataset est organisé selon le format attendu par YOLOv8 et peut être crée par Label-Studio  :

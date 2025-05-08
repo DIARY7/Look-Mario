@@ -101,7 +101,7 @@ class OverlayWindow(QMainWindow):
 
 if __name__ == '__main__':
     game_title = "yuzu 1734 | Super Smash Bros. Ultimate (64-bit) | 13.0.2 | NVIDIA"
-    model_path = "runs/detect/train/weights/best.pt"
+    model_path = "../runs/detect/train/weights/best.pt"
 
     model = YOLO(model_path)
 

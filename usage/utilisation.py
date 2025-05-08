@@ -5,9 +5,9 @@ import numpy as np
 
 def main():
     # Chargement le modèle pré-entraîné
-    model = YOLO('runs/detect/train/weights/best.pt')
+    model = YOLO('../runs/detect/train/weights/best.pt')
 
-    image = cv2.imread('test/frame_0305.jpg') # Mettre l'image de test
+    image = cv2.imread('../test/frame_0305.jpg') # Mettre l'image de test
     resultats = model(image)
 
     # Générer des couleurs distinctes pour chaque classe
@@ -24,7 +24,7 @@ def main():
             create_box(cv2, box,model,colors,image)
 
     # Sauvegarder ou afficher l'image avec les détections
-    cv2.imwrite('resultat_detection.jpg', image)
+    cv2.imwrite('../img/resultat_detection.jpg', image)
     cv2.imshow('Détections', image)
     cv2.waitKey(0)
 
